@@ -6,6 +6,9 @@ import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
@@ -18,6 +21,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import java.util.*
 import com.example.projec_2_raj_rana.databinding.FragmentMapsBinding
+import com.google.android.gms.location.LocationServices
 
 class MapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var map: GoogleMap
@@ -25,6 +29,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private val binding get() = _binding!!
     private val REQUEST_LOCATION_PERMISSION = 1
     private val TAG = MapFragment::class.java.simpleName
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.map_options, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -88,21 +102,53 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+
+    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+        R.id.normal_map -> {
+            map.mapType = GoogleMap.MAP_TYPE_NORMAL
+            true
+        }
+        R.id.hybrid_map -> {
+            map.mapType = GoogleMap.MAP_TYPE_HYBRID
+            true
+        }
+        R.id.satellite_map -> {
+            map.mapType = GoogleMap.MAP_TYPE_SATELLITE
+            true
+        }
+        R.id.terrain_map -> {
+            map.mapType = GoogleMap.MAP_TYPE_TERRAIN
+            true
+        }
+        else -> super.onOptionsItemSelected(item)
+    }
+
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         val zoomLevel = 15f
-        val london = LatLng(42.9849233, -81.245276) //London
-        map.addMarker(MarkerOptions().position(london).title("Marker in London"))
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(london,zoomLevel))
-        setMapLongClick(map) // Call setMapLongClick() function
-        setPoiClick(map) // Call setPoiClick() function
+        enableMyLocation() // Call enableMyLocation() function
+        setMapLongClick(map)
+        setPoiClick(map)
         val overlaySize = 100f
         val androidOverlay = GroundOverlayOptions()
             .image(BitmapDescriptorFactory.fromResource((R.drawable.android)))
-            .position(london, overlaySize)
+            .position(LatLng(0.0, 0.0), overlaySize)
         map.addGroundOverlay(androidOverlay)
-        enableMyLocation()
         setMapStyle(map)
+
+        // Move the camera to the current location
+        val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+        try {
+            fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null) {
+                    val currentLatLng = LatLng(location.latitude, location.longitude)
+                    map.addMarker(MarkerOptions().position(currentLatLng).title("Marker at current location"))
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, zoomLevel))
+                }
+            }
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Location permission not granted", e)
+        }
     }
 
 
@@ -126,7 +172,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
         }
     }
-    
+
     private fun setMapStyle(map: GoogleMap) {
         try {
             val success = map.setMapStyle(
