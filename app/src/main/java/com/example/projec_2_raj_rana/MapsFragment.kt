@@ -23,6 +23,7 @@ import java.util.*
 import com.example.projec_2_raj_rana.databinding.FragmentMapsBinding
 import com.google.android.gms.location.LocationServices
 
+
 class MapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var map: GoogleMap
     private var _binding: FragmentMapsBinding? = null
@@ -51,10 +52,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentMapsBinding.bind(view)
         val mapFragment = childFragmentManager
             .findFragmentById(R.id.mapFragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
     }
+
 
     private fun setMapLongClick(map: GoogleMap) {
         map.setOnMapLongClickListener { latLng ->
@@ -126,24 +129,23 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         val zoomLevel = 15f
-        enableMyLocation()
+        enableMyLocation() // Call enableMyLocation() function
         setMapLongClick(map)
         setPoiClick(map)
-        setNearestStoreMarker()
         val overlaySize = 100f
         val androidOverlay = GroundOverlayOptions()
             .image(BitmapDescriptorFactory.fromResource((R.drawable.android)))
             .position(LatLng(0.0, 0.0), overlaySize)
         map.addGroundOverlay(androidOverlay)
         setMapStyle(map)
+
+        // Move the camera to the current location
         val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         try {
             fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
                 if (location != null) {
                     val currentLatLng = LatLng(location.latitude, location.longitude)
-                    map.addMarker(
-                        MarkerOptions().position(currentLatLng).title("Marker at current location")
-                    )
+                    map.addMarker(MarkerOptions().position(currentLatLng).title("Marker at current location"))
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, zoomLevel))
                 }
             }
@@ -161,21 +163,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             marker.snippet = snippet
             false
         }
-    }
 
-    private fun setNearestStoreMarker() {
-        val nearestStoreLatLng = when (7 % 3) {
-            0 -> LatLng(33.6831721, -117.8319982)
-            1 -> LatLng(37.3229978, -122.0321823)
-            else -> LatLng(37.7896607, -122.4041529)
-        }
-        map.addMarker(
-            MarkerOptions().position(nearestStoreLatLng)
-                .title("Nearest Store")
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.android))
-        )
     }
-
 
 
     // Your other functions
