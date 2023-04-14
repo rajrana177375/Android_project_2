@@ -23,7 +23,6 @@ import java.util.*
 import com.example.projec_2_raj_rana.databinding.FragmentMapsBinding
 import com.google.android.gms.location.LocationServices
 
-
 class MapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var map: GoogleMap
     private var _binding: FragmentMapsBinding? = null
@@ -52,12 +51,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentMapsBinding.bind(view)
         val mapFragment = childFragmentManager
             .findFragmentById(R.id.mapFragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
     }
-
 
     private fun setMapLongClick(map: GoogleMap) {
         map.setOnMapLongClickListener { latLng ->
@@ -79,14 +76,23 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private fun setPoiClick(map: GoogleMap) {
         map.setOnPoiClickListener { poi ->
+            val latLng = poi.latLng
+            val snippet = String.format(
+                Locale.getDefault(),
+                "Lat: %1$.5f, Long: %2$.5f",
+                latLng.latitude,
+                latLng.longitude
+            )
             val poiMarker = map.addMarker(
                 MarkerOptions()
-                    .position(poi.latLng)
+                    .position(latLng)
                     .title(poi.name)
+                    .snippet(snippet)
             )
             poiMarker?.showInfoWindow()
         }
     }
+
 
     private fun enableMyLocation(){
         if (isPermissionGranted()){
@@ -129,7 +135,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         val zoomLevel = 15f
-        enableMyLocation() // Call enableMyLocation() function
+        enableMyLocation()
         setMapLongClick(map)
         setPoiClick(map)
         val overlaySize = 100f
@@ -138,14 +144,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             .position(LatLng(0.0, 0.0), overlaySize)
         map.addGroundOverlay(androidOverlay)
         setMapStyle(map)
-
-        // Move the camera to the current location
         val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         try {
             fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
                 if (location != null) {
                     val currentLatLng = LatLng(location.latitude, location.longitude)
-                    map.addMarker(MarkerOptions().position(currentLatLng).title("Marker at current location"))
+                    map.addMarker(
+                        MarkerOptions().position(currentLatLng).title("Marker at current location")
+                    )
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, zoomLevel))
                 }
             }
@@ -163,11 +169,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             marker.snippet = snippet
             false
         }
-
     }
-
-
-    // Your other functions
 
     private fun isPermissionGranted(): Boolean {
         return ContextCompat.checkSelfPermission(
