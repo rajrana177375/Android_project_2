@@ -126,30 +126,56 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         val zoomLevel = 15f
-        enableMyLocation() // Call enableMyLocation() function
+        enableMyLocation()
         setMapLongClick(map)
         setPoiClick(map)
+        setNearestStoreMarker()
         val overlaySize = 100f
         val androidOverlay = GroundOverlayOptions()
             .image(BitmapDescriptorFactory.fromResource((R.drawable.android)))
             .position(LatLng(0.0, 0.0), overlaySize)
         map.addGroundOverlay(androidOverlay)
         setMapStyle(map)
-
-        // Move the camera to the current location
         val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         try {
             fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
                 if (location != null) {
                     val currentLatLng = LatLng(location.latitude, location.longitude)
-                    map.addMarker(MarkerOptions().position(currentLatLng).title("Marker at current location"))
+                    map.addMarker(
+                        MarkerOptions().position(currentLatLng).title("Marker at current location")
+                    )
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, zoomLevel))
                 }
             }
         } catch (e: SecurityException) {
             Log.e(TAG, "Location permission not granted", e)
         }
+
+        map.setOnMarkerClickListener { marker ->
+            val snippet = String.format(
+                Locale.getDefault(),
+                "Lat: %1$.5f, Long: %2$.5f",
+                marker.position.latitude,
+                marker.position.longitude
+            )
+            marker.snippet = snippet
+            false
+        }
     }
+
+    private fun setNearestStoreMarker() {
+        val nearestStoreLatLng = when (7 % 3) {
+            0 -> LatLng(33.6831721, -117.8319982)
+            1 -> LatLng(37.3229978, -122.0321823)
+            else -> LatLng(37.7896607, -122.4041529)
+        }
+        map.addMarker(
+            MarkerOptions().position(nearestStoreLatLng)
+                .title("Nearest Store")
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.android))
+        )
+    }
+
 
 
     // Your other functions
