@@ -8,6 +8,11 @@ android {
     namespace 'com.example.projec_2_raj_rana'
     compileSdk 33
 
+    buildFeatures {
+        dataBinding true
+        viewBinding true
+    }
+
     defaultConfig {
         applicationId "com.example.projec_2_raj_rana"
         minSdk 29

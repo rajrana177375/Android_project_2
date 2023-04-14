@@ -9,12 +9,13 @@
 
     <fragment
         android:id="@+id/mapFragment"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:name="com.example.projec_2_raj_rana.MapFragment"
         android:layout_width="match_parent"
         android:layout_height="550dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
 
     <fragment
         android:id="@+id/coordinatesFragment"
