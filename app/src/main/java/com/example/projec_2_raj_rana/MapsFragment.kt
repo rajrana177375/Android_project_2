@@ -76,16 +76,15 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private fun setPoiClick(map: GoogleMap) {
         map.setOnPoiClickListener { poi ->
-            val latLng = poi.latLng
             val snippet = String.format(
                 Locale.getDefault(),
                 "Lat: %1$.5f, Long: %2$.5f",
-                latLng.latitude,
-                latLng.longitude
+                poi.latLng.latitude,
+                poi.latLng.longitude
             )
             val poiMarker = map.addMarker(
                 MarkerOptions()
-                    .position(latLng)
+                    .position(poi.latLng)
                     .title(poi.name)
                     .snippet(snippet)
             )
@@ -132,6 +131,17 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         else -> super.onOptionsItemSelected(item)
     }
 
+    interface OnMarkerClickListener {
+        fun onMarkerClicked(markerPosition: LatLng)
+    }
+
+    private var markerClickListener: OnMarkerClickListener? = null
+
+    fun setOnMarkerClickListener(listener: OnMarkerClickListener) {
+        markerClickListener = listener
+    }
+
+
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         val zoomLevel = 15f
@@ -160,6 +170,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
 
         map.setOnMarkerClickListener { marker ->
+            // Call the callback function to pass the marker's position to the MainActivity
+            markerClickListener?.onMarkerClicked(marker.position)
             val snippet = String.format(
                 Locale.getDefault(),
                 "Lat: %1$.5f, Long: %2$.5f",
@@ -167,8 +179,19 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 marker.position.longitude
             )
             marker.snippet = snippet
+
+            // Update the coordinates in CoordinatesFragment when a marker is clicked
+            (activity as? MainActivity)?.let {
+                it.supportFragmentManager.findFragmentById(R.id.coordinatesFragment)?.let { fragment ->
+                    if (fragment is CoordinatesFragment) {
+                        fragment.setCoordinates(marker.position.latitude, marker.position.longitude)
+                    }
+                }
+            }
             false
         }
+
+
     }
 
     private fun isPermissionGranted(): Boolean {

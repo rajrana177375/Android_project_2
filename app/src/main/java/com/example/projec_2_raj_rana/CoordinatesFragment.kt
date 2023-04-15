@@ -8,11 +8,17 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import android.util.Log
+import com.google.android.gms.maps.model.LatLng
+
 
 class CoordinatesFragment : Fragment() {
 
     private lateinit var tvCoordinates: TextView
     private lateinit var btnDisplay: Button
+
+    fun setCoordinates(latitude: Double, longitude: Double) {
+        tvCoordinates.text = "Latitude: $latitude, Longitude: $longitude"
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         Log.d("CoordinatesFragment", "onCreateView called")
@@ -21,15 +27,14 @@ class CoordinatesFragment : Fragment() {
         tvCoordinates = view.findViewById(R.id.tvCoordinates)
         btnDisplay = view.findViewById(R.id.btnDisplay)
 
-        btnDisplay.setOnClickListener {
-            // Replace with actual coordinates
-            val latitude = -34.0
-            val longitude = 151.0
-            tvCoordinates.text = "Latitude: $latitude, Longitude: $longitude"
-        }
-
         return view
     }
+
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+    }
+
 
 
     companion object {
