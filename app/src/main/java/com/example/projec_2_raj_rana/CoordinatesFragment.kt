@@ -12,12 +12,14 @@ import com.google.android.gms.maps.model.LatLng
 
 
 class CoordinatesFragment : Fragment() {
-
     private lateinit var tvCoordinates: TextView
     private lateinit var btnDisplay: Button
+    var lat: Double = 0.0
+    var long: Double = 0.0
 
     fun setCoordinates(latitude: Double, longitude: Double) {
-        tvCoordinates.text = "Latitude: $latitude, Longitude: $longitude"
+        lat = latitude
+        long = longitude
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -30,12 +32,13 @@ class CoordinatesFragment : Fragment() {
         return view
     }
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        btnDisplay = view.findViewById(R.id.btnDisplay)
+        btnDisplay.setOnClickListener {
+            tvCoordinates.text = "Latitude: $lat, Longitude: $long"
+        }
     }
-
-
 
     companion object {
         @JvmStatic

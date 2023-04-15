@@ -19,8 +19,4 @@ class MainActivity : AppCompatActivity(), MapFragment.OnMarkerClickListener  {
         currentMarkerLatLng = markerPosition
     }
 
-    fun getCurrentMarkerLatLng(): LatLng? {
-        return currentMarkerLatLng
-    }
-
 }

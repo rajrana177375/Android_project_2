@@ -64,13 +64,21 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 latLng.latitude,
                 latLng.longitude
             )
-            map.addMarker(
+            val longClick = map.addMarker(
                 MarkerOptions()
                     .position(latLng)
                     .title(getString(R.string.dropped_pin))
                     .snippet(snippet)
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
             )
+
+            (activity as? MainActivity)?.let {
+                it.supportFragmentManager.findFragmentById(R.id.coordinatesFragment)?.let { fragment ->
+                    if (fragment is CoordinatesFragment) {
+                        fragment.setCoordinates(longClick.position.latitude, longClick.position.longitude)
+                    }
+                }
+            }
         }
     }
 
@@ -89,9 +97,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     .snippet(snippet)
             )
             poiMarker?.showInfoWindow()
+
+            (activity as? MainActivity)?.let {
+                it.supportFragmentManager.findFragmentById(R.id.coordinatesFragment)?.let { fragment ->
+                    if (fragment is CoordinatesFragment) {
+                        fragment.setCoordinates(poiMarker.position.latitude, poiMarker.position.longitude)
+                    }
+                }
+            }
         }
     }
-
 
     private fun enableMyLocation(){
         if (isPermissionGranted()){
@@ -109,7 +124,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             )
         }
     }
-
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.normal_map -> {
@@ -137,11 +151,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private var markerClickListener: OnMarkerClickListener? = null
 
-    fun setOnMarkerClickListener(listener: OnMarkerClickListener) {
-        markerClickListener = listener
-    }
-
-
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         val zoomLevel = 15f
@@ -162,6 +171,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     map.addMarker(
                         MarkerOptions().position(currentLatLng).title("Marker at current location")
                     )
+
+                    map.addMarker(
+                        MarkerOptions().position(LatLng(37.41579, -122.07755)).title("Cafe")
+                    )
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, zoomLevel))
                 }
             }
@@ -170,7 +183,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
 
         map.setOnMarkerClickListener { marker ->
-            // Call the callback function to pass the marker's position to the MainActivity
             markerClickListener?.onMarkerClicked(marker.position)
             val snippet = String.format(
                 Locale.getDefault(),
@@ -180,7 +192,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             )
             marker.snippet = snippet
 
-            // Update the coordinates in CoordinatesFragment when a marker is clicked
             (activity as? MainActivity)?.let {
                 it.supportFragmentManager.findFragmentById(R.id.coordinatesFragment)?.let { fragment ->
                     if (fragment is CoordinatesFragment) {
@@ -190,8 +201,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
             false
         }
-
-
     }
 
     private fun isPermissionGranted(): Boolean {
